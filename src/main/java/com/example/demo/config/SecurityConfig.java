@@ -33,6 +33,7 @@ public class SecurityConfig {
                 .requestMatchers(
     "/auth/**",
     "/api/auth/**",
+    "/api/payment/**",
     "/actuator/**",
     "/error"
 ).permitAll()

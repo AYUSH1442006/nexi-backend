@@ -27,6 +27,7 @@ protected boolean shouldNotFilter(HttpServletRequest request) {
 
     return path.startsWith("/auth/")
         || path.startsWith("/api/auth/")
+        || path.startsWith("/api/payment/") 
         || path.startsWith("/actuator/")
         || path.equals("/error");
 }
