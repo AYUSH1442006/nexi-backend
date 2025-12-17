@@ -17,7 +17,7 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/ai")
-@CrossOrigin(origins = "*")
+//@CrossOrigin(origins = "*")
 public class BidAIController {
 
     @Autowired

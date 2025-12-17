@@ -23,7 +23,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/bids")
-@CrossOrigin(origins = "*")
+//@CrossOrigin(origins = "*")
 public class BidController {
 
     @Autowired

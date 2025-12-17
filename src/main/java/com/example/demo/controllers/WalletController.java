@@ -17,7 +17,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/wallet")
-@CrossOrigin(origins = "*")
+//@CrossOrigin(origins = "*")
 public class WalletController {
 
     @Autowired

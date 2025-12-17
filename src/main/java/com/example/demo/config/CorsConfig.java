@@ -14,10 +14,10 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins(
+                        .allowedOriginPatterns(  // ✅ Use allowedOriginPatterns, not allowedOrigins
                             "http://localhost:5173",
                             "https://nexi-frontend-six.vercel.app",
-                            "https://*.vercel.app"  // Allows all your Vercel preview deployments
+                            "https://*.vercel.app"
                         )
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
                         .allowedHeaders("*")
