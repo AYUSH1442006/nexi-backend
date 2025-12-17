@@ -48,35 +48,65 @@ public class PaymentController {
     @PostMapping("/create-order")
     public ResponseEntity<?> createOrder(@RequestBody Map<String, Object> data) {
         try {
+            // ✅ DEBUG LOGGING
+            System.out.println("=== CREATE ORDER REQUEST ===");
+            System.out.println("Request data: " + data);
+            
             String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            System.out.println("🔍 Extracted email from JWT: " + email);
+            System.out.println("🔍 Authentication principal: " + SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+            
             User user = userRepository.findByEmail(email);
             
             if (user == null) {
+                System.err.println("❌ User NOT FOUND with email: " + email);
+                
+                // Check how many users exist in database
+                long totalUsers = userRepository.count();
+                System.err.println("❌ Total users in database: " + totalUsers);
+                
+                // Try to list first few users (for debugging)
+                try {
+                    var allUsers = userRepository.findAll();
+                    System.err.println("❌ Available users in DB:");
+                    allUsers.forEach(u -> System.err.println("   - " + u.getEmail()));
+                } catch (Exception e) {
+                    System.err.println("❌ Could not list users: " + e.getMessage());
+                }
+                
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body(Map.of("error", "User not found"));
             }
+            
+            System.out.println("✅ User FOUND: " + user.getEmail() + " (ID: " + user.getId() + ")");
 
             String bidId = data.get("bidId").toString();
             Bid bid = bidRepository.findById(bidId).orElse(null);
             
             if (bid == null) {
+                System.err.println("❌ Bid not found: " + bidId);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(Map.of("error", "Bid not found"));
             }
 
+            System.out.println("✅ Bid found: " + bid.getId() + " - Status: " + bid.getStatus());
+
             // Verify the bid belongs to the current user
             if (!bid.getBidderId().equals(user.getId())) {
+                System.err.println("❌ Authorization failed - Bid bidder: " + bid.getBidderId() + ", Current user: " + user.getId());
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body(Map.of("error", "You are not authorized to pay for this bid"));
             }
 
             // Verify bid is in ACCEPTED status
             if (!"ACCEPTED".equals(bid.getStatus())) {
+                System.err.println("❌ Invalid bid status: " + bid.getStatus());
                 return ResponseEntity.badRequest()
                         .body(Map.of("error", "Only accepted bids can be paid. Current status: " + bid.getStatus()));
             }
 
             // Create Razorpay order
+            System.out.println("🔍 Creating Razorpay order...");
             RazorpayClient razorpay = new RazorpayClient(razorpayKeyId, razorpayKeySecret);
             
             int amountInPaise = (int) (bid.getBidAmount() * 100);
@@ -96,11 +126,13 @@ public class PaymentController {
             response.put("keyId", razorpayKeyId);
             
             System.out.println("✅ Razorpay order created: " + order.get("id"));
+            System.out.println("=== END CREATE ORDER ===");
             
             return ResponseEntity.ok(response);
             
         } catch (RazorpayException e) {
             System.err.println("❌ Razorpay error: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.badRequest()
                     .body(Map.of("error", "Razorpay error: " + e.getMessage()));
         } catch (Exception e) {
